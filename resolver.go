@@ -1,16 +1,16 @@
 // Package doh implements client operations for DoH (DNS over HTTPS) lookups.
 package doh
 
+import "crypto/tls"
+
 // Resolver handles lookups.
 type Resolver struct {
 	// The host to send DoH requests to.
 	Host string
 	// The DNS class to lookup with, must be one of IN, CS, CH, HS or ANYCLASS.
 	// As a hint, the most used class nowadays is IN (Internet).
-	Class DNSClass
-	// Flag to allow requests to insecure addresses (handy for local testing)
-	// with self signed certificates
-	AllowInsecure bool
+	Class  DNSClass
+	Config *tls.Config
 }
 
 // lookup encodes a DNS query, sends it over HTTPS then parses the response.
@@ -18,7 +18,7 @@ type Resolver struct {
 // parsing the response headers.
 func (r *Resolver) lookup(fqdn string, t DNSType, c DNSClass) ([]answer, error) {
 	q := encodeQuery(fqdn, t, c)
-	res, err := exchangeHTTPS(q, r.Host, r.AllowInsecure)
+	res, err := exchangeHTTPS(q, r.Host, r.Config)
 	if err != nil {
 		return nil, err
 	}

@@ -1,1 +1,1 @@
-module github.com/dnsadblock/go-doh-client
+module github.com/Elctro/go-doh-client
