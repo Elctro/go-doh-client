@@ -2,7 +2,6 @@ package doh
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 // request as described in RFC 8484, and returns the response's body.
 // Returns an error if there was an issue sending the request or reading the
 // response body.
-func exchangeHTTPS(q []byte, resolver string, c *tls.Config) (a []byte, err error) {
+func exchangeHTTPS(q []byte, resolver string, c *http.Client) (a []byte, err error) {
 	url := fmt.Sprintf("https://%s/dns-query", resolver)
 	body := bytes.NewBuffer(q)
 
@@ -24,15 +23,10 @@ func exchangeHTTPS(q []byte, resolver string, c *tls.Config) (a []byte, err erro
 	req.Header.Add("Accept", "application/dns-message")
 	req.Header.Add("Content-Type", "application/dns-message")
 
-	tr := &http.Transport{
-		TLSClientConfig: c,
-	}
-	client := http.Client{Transport: tr}
-	resp, err := client.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return
 	}
-
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
